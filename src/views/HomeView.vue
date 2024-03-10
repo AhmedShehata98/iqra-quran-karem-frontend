@@ -1,5 +1,6 @@
+<!-- eslint-disable vue/no-multiple-template-root -->
 <template>
-  <v-app-bar class="bg-amber-lighten-2">
+  <v-app-bar class="bg-amber-lighten-3" elevation="1">
     <v-app-bar-title class="logo">
       <div class="logo">
         <v-icon class="display">mdi-book-open-page-variant</v-icon>
@@ -7,32 +8,37 @@
       </div>
     </v-app-bar-title>
   </v-app-bar>
-  <v-container fluid class="mt-16 bg-amber-lighten-3 px-16">
-    <v-row class="w-100 mt-8 px-16">
-      <v-col cols="7">
-        <h3 class="text-h3 font-weight-bold mt-16">
+  <v-container fluid class="mt-lg-16 bg-amber-lighten-4 px-lg-16">
+    <v-row class="flex-column-reverse flex-lg-row mt-8 px-lg-16">
+      <v-col cols="12" xs="12" sm="12" md="12" lg="7">
+        <h3
+          class="text-h5 text-sm-h4 text-lg-h3 text-center text-md-start font-weight-bold mt-md-16"
+        >
           إِنّ هَذَا الْقُرْآنَ يِهْدِي لِلّتِي هِيَ أَقْوَمُ وَيُبَشّرُ
           الْمُؤْمِنِينَ الّذِينَ يَعْمَلُونَ الصّالِحَاتِ أَنّ لَهُمْ أَجْراً
           كَبِيراً
         </h3>
-        <p class="text-h5 mt-6">
+        <p
+          class="text-subtitle-2 text-center text-md-start font-weight-semibold mt-6"
+        >
           وأَنّ الّذِينَ لاَ يُؤْمِنُونَ بالآخرة أَعْتَدْنَا لَهُمْ عَذَاباً
           أَلِيماً [سورة الإسراء: 9، 10].
         </p>
-        <div class="w-100 d-flex items-center justify-start mt-8">
+        <v-col cols="12" md="6" lg="4" class="mt-8">
           <v-btn
-            color="warning"
+            color="blue-darken-4"
             href="/reciter"
             variant="flat"
             size="x-large"
             width="30%"
+            class="w-100"
             prependIcon="mdi-account-group"
             >قائمة القراء</v-btn
           >
-        </div>
+        </v-col>
 
         <div
-          class="w-100 d-flex items-center justify-start max-tablet:justify-center ga-12 mt-14 px-2"
+          class="w-100 d-flex items-center justify-center justify-md-start max-tablet:justify-center ga-12 mt-14 px-2"
         >
           <span class="d-flex flex-column ga-1 justify-center items-center">
             <p
@@ -60,11 +66,11 @@
           </span>
         </div>
       </v-col>
-      <v-col cols="5">
+      <v-col cols="12" xs="12" sm="12" md="10" lg="5" class="mx-auto">
         <v-img :src="moshaf" alt="moshaf.png"></v-img>
       </v-col>
     </v-row>
-    <v-row class="h-screen">
+    <v-row class="mb-10">
       <v-col cols="12">
         <h3 class="text-h4 font-weight-bold mb-16 text-center mt-4">
           نقدم لكم
@@ -92,36 +98,36 @@
   </v-container>
 </template>
 <script setup>
-import moshaf from "@/assets/_saAJI62AK-4s12CAc8gU-transformed.png";
+import moshaf from '@/assets/_saAJI62AK-4s12CAc8gU-transformed.png'
 const services = [
   {
     id: 1,
-    title: "قراء مختلفون",
+    title: 'قراء مختلفون',
     icon: `mdi-account`,
     description:
-      " مجموعة كبيرة و متنوعة من اشهر القراء منعم الفراء الحدد و القراء القدامي من مختلف بلاد العالم افضل الاصوات مع نلاوات متنوعة لكل قاريء",
+      ' مجموعة كبيرة و متنوعة من اشهر القراء منعم الفراء الحدد و القراء القدامي من مختلف بلاد العالم افضل الاصوات مع نلاوات متنوعة لكل قاريء',
   },
   {
     id: 2,
-    title: "اذاعة راديو",
+    title: 'اذاعة راديو',
     icon: `mdi-radio`,
     description:
-      "اذاعة راديو القرئان الكريم لقراء كثر باصوات عطرة اذاعات من بلاد مختلفة ",
+      'اذاعة راديو القرئان الكريم لقراء كثر باصوات عطرة اذاعات من بلاد مختلفة ',
   },
   {
     id: 3,
-    title: "محطات تليفزيونية",
+    title: 'محطات تليفزيونية',
     icon: `mdi-television `,
     description:
-      "محطات اذاعة قرءان كريم مباشرة لاشهر قنوات القرءان الكريم في العالم العربي مترجمة بمعظم اللغات",
+      'محطات اذاعة قرءان كريم مباشرة لاشهر قنوات القرءان الكريم في العالم العربي مترجمة بمعظم اللغات',
   },
   {
     id: 4,
-    title: "تدبر",
+    title: 'تدبر',
     icon: `mdi-head-snowflake`,
-    description: " تدبر في ايات الفرءان الكريم و فهم الايات و العمل بها  ",
+    description: ' تدبر في ايات الفرءان الكريم و فهم الايات و العمل بها  ',
   },
-];
+]
 </script>
 <style scoped lang="css">
 .logo {
