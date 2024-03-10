@@ -1,0 +1,14 @@
+/* @import "./base.css"; */
+/* @import "@/style.css"; */
+
+/* body ::-webkit-scrollbar {
+  @apply bg-light-secondary-400 rounded-full w-3 h-4;
+}
+
+body ::-webkit-scrollbar-thumb {
+  @apply bg-light-secondary-700 rounded-full cursor-pointer shadow-lg hover:brightness-90;
+} */
+
+body {
+  font-family: "Cairo", sans-serif;
+}

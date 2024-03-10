@@ -1,0 +1,32 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "src/**/*.js",
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "./src/*.ts",
+    "./src/*.vue",
+    "./src/*.ext"
+  ],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "resolveJsonModule": true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/constants": ["./src/constants/*.ts"],
+      "@/components": ["./src/constants/*.ts"],
+      "@/stores": ["src/stores/*.ts"],
+      "@/utils": ["src/utils/*.ts"],
+      "@/i18n": ["src/i18n/*.ts"]
+    }
+  }
+}
