@@ -8,6 +8,8 @@
         v-model="audioPlayerState.currentTime"
         thumb-label="always"
         thumb-size="15"
+        thumb-color="grey-darken-2"
+        track-color="grey-darken-3"
         @update:modelValue="audioPlayerState.handleUpdateCurrentTime"
       >
         <template v-slot:prepend>

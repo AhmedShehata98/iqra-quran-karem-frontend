@@ -1,23 +1,32 @@
 <template>
   <v-navigation-drawer
     location="bottom"
-    color="grey-lighten-3"
+    color="grey-lighten-4"
     v-model="state.isShownPlayer"
+    :scrim="false"
   >
-    <v-card class="h-100 pa-4">
-      <div class="w-100 d-flex flex-column items-center justify-center ga-2">
-        <div class="w-100 d-flex items-center justify-between ga-4">
+    <v-container fluid>
+      <v-row>
+        <v-col cols="12" xs="12" sm="12" md="4">
           <TrackElement
             :trackName="state.selectedMediaDetails?.name || 'لم تختار بعد'"
             :isMekkia="state.selectedMediaDetails?.mekkia || 'لم تختار بعد'"
             :trackThumbnail="surahThumbnail"
           />
+        </v-col>
+        <v-col cols="12" xs="12" sm="12" md="4">
           <Controls />
+        </v-col>
+        <v-col class="volume-wrapper" cols="12" xs="12" sm="12" md="4">
           <Volume />
-        </div>
-        <ProcessBar />
-      </div>
-    </v-card>
+        </v-col>
+      </v-row>
+      <v-row class="mt-0">
+        <v-col>
+          <ProcessBar />
+        </v-col>
+      </v-row>
+    </v-container>
   </v-navigation-drawer>
 </template>
 <script setup lang="ts">
@@ -36,6 +45,21 @@ const state = useAudioPlayerStore()
 
 <style lang="css" scoped>
 .v-navigation-drawer--bottom {
-  height: 144px !important;
+  height: 145px !important;
+  overflow: hidden;
+}
+
+.volume-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+@media screen and (max-width: 768px) {
+  .v-navigation-drawer--bottom {
+    height: auto !important;
+  }
+  .volume-wrapper {
+    display: none;
+  }
 }
 </style>

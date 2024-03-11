@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from "vue";
-import ReciterCard from "@/components/ReciterCard.vue";
-import { useQuery } from "@tanstack/vue-query";
-import { getAllReciters } from "@/constants/quran";
-import { useReciterState } from "@/stores/reciterState";
-import { useSideMenuState } from "@/stores/sideMenuState";
-import SideMenu from "@/components/SideMenu.vue";
-const sideMenuState = useSideMenuState();
+import { ref, onUnmounted } from 'vue'
+import ReciterCard from '@/components/ReciterCard.vue'
+import { useQuery } from '@tanstack/vue-query'
+import { getAllReciters } from '@/constants/quran'
+import { useReciterState } from '@/stores/reciterState'
+import { useSideMenuState } from '@/stores/sideMenuState'
+import SideMenu from '@/components/SideMenu.vue'
+const sideMenuState = useSideMenuState()
 // Import Swiper styles
-import "swiper/css";
+import 'swiper/css'
 
 const {
   data: responseReciters,
@@ -16,61 +16,79 @@ const {
   error: recitersError,
   isLoading,
   isFetched,
+  refetch,
 } = useQuery({
-  queryKey: ["reciters"],
-  queryFn: getAllReciters,
-});
+  queryKey: ['reciters'],
+  queryFn: () => getAllReciters({ page: page.value, limit: limit.value }),
+})
 // states
 //
-const reciterState = useReciterState();
-const isOffline = ref(false);
+const reciterState = useReciterState()
+const isOffline = ref(false)
+const scrollOffset = ref(0)
+const limit = ref(25)
+const page = ref(1)
 
 // methods
 //
-const handleCloseMenu = () => sideMenuState.setToggle();
+const handleCloseMenu = () => sideMenuState.setToggle()
 
 function handleSelectReciter(reciter: Reciter) {
-  reciterState.setReciter(reciter);
+  reciterState.setReciter(reciter)
 }
 function handleFavorites(data: Reciter, ev: Event) {
   const reciterCardRef = (ev.target as HTMLButtonElement).closest(
-    "#reciter-card"
-  );
+    '#reciter-card',
+  )
   const isFavoriteReciter =
-    reciterCardRef?.classList.contains("isFavoriteReciter");
+    reciterCardRef?.classList.contains('isFavoriteReciter')
   if (isFavoriteReciter) {
-    reciterState.removeFavoriteReciter(data.id);
+    reciterState.removeFavoriteReciter(data.id)
   } else {
-    reciterState.setFavoriteReciter(data);
+    reciterState.setFavoriteReciter(data)
   }
 
-  console.log(reciterCardRef);
+  console.log(reciterCardRef)
 }
 function handleRemoveFavorite(reciterId: string) {
-  reciterState.removeFavoriteReciter(reciterId);
+  reciterState.removeFavoriteReciter(reciterId)
+}
+function determineScrollY() {
+  const offsetTop = window.pageYOffset || window.screenY
+  scrollOffset.value = offsetTop
+}
+function goTop() {
+  document.body.scrollIntoView({ behavior: 'smooth' })
+}
+function handleShowMore() {
+  page.value += 1
+  refetch()
 }
 
 // listeners
 //
-window.addEventListener("online", () => {
-  isOffline.value = false;
-});
-window.addEventListener("offline", () => {
-  isOffline.value = true;
-});
+window.addEventListener('online', () => {
+  isOffline.value = false
+})
+window.addEventListener('offline', () => {
+  isOffline.value = true
+})
+
+window.addEventListener('scroll', determineScrollY)
 
 onUnmounted(() => {
-  window.removeEventListener("offline", () => {
-    isOffline.value = true;
-  });
-  window.removeEventListener("online", () => {
-    isOffline.value = false;
-  });
-});
+  window.removeEventListener('offline', () => {
+    isOffline.value = true
+  })
+  window.removeEventListener('online', () => {
+    isOffline.value = false
+  })
+  window.removeEventListener('scroll', determineScrollY)
+})
 </script>
 
 <template>
-  <v-app-bar class="bg-indigo-darken-4">
+  <v-app-bar class="bg-teal-lighten-1">
     <v-app-bar-nav-icon :onclick="handleCloseMenu"></v-app-bar-nav-icon>
     <v-app-bar-title class="text-uppercase"> القراء </v-app-bar-title>
     <v-btn icon>
@@ -157,7 +175,7 @@ onUnmounted(() => {
                 {{ items.letter }}</v-chip
               >
             </div>
-            <v-slide-group height="425" mandatory show-arrows class="ga-3 py-2">
+            <v-slide-group show-arrows height="425" mandatory class="ga-3 py-2">
               <v-slide-group-item
                 v-for="reciter in items.data"
                 :key="reciter.id"
@@ -176,6 +194,47 @@ onUnmounted(() => {
           </v-sheet>
         </v-col>
       </v-row>
+      <v-row class="mb-6">
+        <v-btn
+          block
+          color="grey-lighten-2"
+          variant="flat"
+          :loading="isLoading"
+          append-icon="mdi-reload"
+          :aria-disabled="responseReciters.hasNext === false"
+          :disabled="responseReciters.hasNext === false"
+          @click="handleShowMore"
+          >load more</v-btn
+        >
+      </v-row>
     </v-container>
+    <v-btn
+      color="purple-darken-3"
+      icon="mdi-chevron-up"
+      elevation="8"
+      size="large"
+      @click="goTop"
+      :class="scrollOffset >= 250 ? 'go-top-btn' : 'go-top-btn hidden-btn'"
+    ></v-btn>
   </v-main>
 </template>
+<style scoped>
+.go-top-btn {
+  position: fixed;
+  z-index: 50;
+  top: 85%;
+  left: 2%;
+  transition: scale 0.3s ease-in-out;
+}
+.go-top-btn.hidden-btn {
+  scale: 0.5;
+  opacity: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .v-slide-group__prev,
+  .v-slide-group__next {
+    display: none !important;
+  }
+}
+</style>

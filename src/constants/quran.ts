@@ -1,100 +1,107 @@
-import { ENDPOINTS, QuranAxios } from "./api";
+import { ENDPOINTS, QuranAxios } from './api'
 
-export async function getAllReciters(): Promise<ReciterResponse> {
+export async function getAllReciters({
+  limit,
+  page,
+}: {
+  limit: number
+  page: number
+}): Promise<ReciterResponse> {
   try {
     const res = await QuranAxios({
       url: ENDPOINTS.reciters,
-    });
-    return res.data;
+      params: { limit, page },
+    })
+    return res.data
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 export async function getReciterDetails(
-  reciterId: string
+  reciterId: string,
 ): Promise<ReciterDetailsResponse> {
   try {
     const res = await QuranAxios({
       url: `${ENDPOINTS.reciters}/${reciterId}`,
-    });
-    return res.data;
+    })
+    return res.data
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 export async function getAllSuwar({
-  lang = "ara",
+  lang = 'ara',
 }: {
-  lang: string;
+  lang: string
 }): Promise<Surah[]> {
   try {
     const { data } = await QuranAxios({
       url: ENDPOINTS.suwar,
       params: { lang },
-    });
-    return data.suwar;
+    })
+    return data.suwar
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 export async function getAllMoshafWays({
-  lang = "ara",
+  lang = 'ara',
 }: {
-  lang?: string;
+  lang?: string
 }): Promise<Moshaf[]> {
   try {
     const reciters = await QuranAxios({
       url: ENDPOINTS.moshaf,
       params: { lang },
-    });
-    return reciters.data;
+    })
+    return reciters.data
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 export async function getAllRecitersRecentReads({
-  lang = "ara",
+  lang = 'ara',
 }: {
-  lang?: string;
+  lang?: string
 }): Promise<RecitersRecentRead[]> {
   try {
     const reciters = await QuranAxios({
       url: ENDPOINTS.recent_reads,
       params: { lang },
-    });
-    return reciters.data;
+    })
+    return reciters.data
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 export async function getAllQuranLiveChannels({
-  lang = "ara",
+  lang = 'ara',
 }: {
-  lang?: string;
+  lang?: string
 }): Promise<LiveChannel[]> {
   try {
     const reciters = await QuranAxios({
       url: ENDPOINTS.liveTv,
       params: { lang },
-    });
-    return reciters.data;
+    })
+    return reciters.data
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 export async function getAllQuranRadios({
-  lang = "ara",
+  lang = 'ara',
 }: {
-  lang?: string;
-  last_updated_date?: string;
+  lang?: string
+  last_updated_date?: string
 }): Promise<Radio[]> {
   try {
     const reciters = await QuranAxios({
       url: ENDPOINTS.recent_reads,
       params: { lang },
-    });
-    return reciters.data;
+    })
+    return reciters.data
   } catch (error) {
-    throw error;
+    throw error
   }
 }

@@ -1,13 +1,13 @@
 // eslint-disable-next-line vue/multi-word-component-names
 <template>
-  <v-row class="w-50 items-center justify-center">
-    <v-col cols="8" class="d-flex align-center justify-center ga-6">
+  <div class="controls">
+    <span>
       <v-btn
         title="السابق"
         variant="tonal"
         icon
         color="deep-purple-darken-4"
-        @click="audioPlayerState.setPrevMedia()"
+        @click="handlePrevMediaElem()"
         :aria-disabled="audioPlayerState.isFirstMediaElem"
         :disabled="audioPlayerState.isFirstMediaElem"
       >
@@ -40,23 +40,43 @@
         variant="tonal"
         icon
         color="deep-purple-darken-4"
-        @click="audioPlayerState.setNextMedia()"
+        @click="handleNextMediaElem()"
       >
         <v-icon>mdi-skip-forward</v-icon>
       </v-btn>
-    </v-col>
-    <v-col cols="4" class="d-flex align-center justify-start">
-      <v-btn variant="tonal" icon color="deep-purple-darken-4">
+    </span>
+    <span>
+      <v-btn
+        :variant="audioPlayerState.isShuffled ? 'flat' : 'tonal'"
+        icon
+        color="deep-purple-darken-4"
+        @click="audioPlayerState.setShuffleMedia()"
+      >
         <v-icon>mdi-shuffle-variant</v-icon>
       </v-btn>
-    </v-col>
-  </v-row>
+    </span>
+  </div>
 </template>
 <script setup lang="ts">
 const props = defineProps(['isLastMediaElem', 'isFirstMediaElem'])
 import { audioTimeFormat } from '@/utils/audioTimeFormat'
 import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
 const audioPlayerState = useAudioPlayerStore()
+
+function handleNextMediaElem() {
+  if (audioPlayerState.isShuffled) {
+    audioPlayerState.playShuffledMedia()
+  } else {
+    audioPlayerState.setNextMedia()
+  }
+}
+function handlePrevMediaElem() {
+  if (audioPlayerState.isShuffled) {
+    audioPlayerState.playShuffledMedia()
+  } else {
+    audioPlayerState.setPrevMedia()
+  }
+}
 
 // const emits = defineEmits([
 //   'onPause',
@@ -68,6 +88,34 @@ const audioPlayerState = useAudioPlayerStore()
 </script>
 <style scoped>
 .controls {
-  @apply shrink-0 flex items-center justify-center gap-5;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.controls > :nth-child(1) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+.controls > :nth-child(2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline-end: 1.5rem;
+  padding-inline-start: 3.5rem;
+}
+.controls > :nth-child(1) {
+  margin-block: auto;
+}
+@media screen and (max-width: 768px) {
+  .controls > :nth-child(2) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline-end: 0;
+    padding-inline-start: 0;
+  }
 }
 </style>

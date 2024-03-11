@@ -6,7 +6,7 @@ const sideMenuState = useSideMenuState()
 <template>
   <v-navigation-drawer
     v-model="sideMenuState.isShown"
-    color="indigo-darken-2"
+    color="teal-lighten-2"
     tag="aside"
     location="right"
   >

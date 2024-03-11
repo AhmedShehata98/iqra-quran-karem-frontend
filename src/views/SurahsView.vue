@@ -1,9 +1,14 @@
 <template>
-  <v-app-bar class="bg-indigo-darken-4">
+  <v-app-bar class="bg-teal-lighten-1">
     <v-app-bar-nav-icon :onclick="handleCloseMenu"></v-app-bar-nav-icon>
     <v-app-bar-title>قائمة السور</v-app-bar-title>
-    <v-btn icon>
-      <v-icon> mdi-magnify </v-icon>
+    <v-btn
+      icon
+      @click="
+        audioPlayerState.setToggleShowPlayer(!audioPlayerState.isShownPlayer)
+      "
+    >
+      <v-icon> mdi-music-note </v-icon>
     </v-btn>
     <v-btn icon>
       <v-icon>mdi-dots-vertical</v-icon>
@@ -82,7 +87,13 @@
                 hover
               >
               </v-data-table> -->
-              <v-table hover density="comfortable" height="65vh">
+              <v-table
+                hover
+                density="comfortable"
+                height="65vh"
+                fixed-footer
+                fixed-header
+              >
                 <thead>
                   <tr>
                     <th v-for="head in suwarHeaders" :key="head.key">
@@ -91,7 +102,34 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in suwarItems" :key="item['ID']">
+                  <surah-table-card
+                    v-for="item in suwarItems.filter((surah: any) =>
+                      surah.surahName
+                        .toLowerCase()
+                        .startsWith(searchTerm.toLowerCase()),
+                    )"
+                    :key="item['ID']"
+                    :suwarItems="item"
+                    :reciterName="reciterDetails.reciter.name"
+                    :server="
+                      reciterDetails.reciter.moshaf[selectedMoshafIdx].server
+                    "
+                  ></surah-table-card>
+                  <!-- <tr
+                    v-for="item in suwarItems.filter((surah: any) =>
+                      surah.surahName
+                        .toLowerCase()
+                        .startsWith(searchTerm.toLowerCase()),
+                    )"
+                    :class="
+                      audioPlayerState.selectedMediaDetails !== null &&
+                      audioPlayerState.selectedMediaDetails.id ===
+                        +item['ID'] &&
+                      !audioPlayerState.isPaused &&
+                      'bg-teal-lighten-3'
+                    "
+                    :key="item['ID']"
+                  >
                     <td>{{ item['ID'] }}</td>
                     <td>{{ item.surahName }}</td>
                     <td>{{ item.surahLocation }}</td>
@@ -101,9 +139,10 @@
                         v-if="
                           audioPlayerState.selectedMediaDetails === null ||
                           audioPlayerState.selectedMediaDetails.id !==
-                            +item['ID']
+                            +item['ID'] ||
+                          audioPlayerState.isPaused
                         "
-                        icon
+                        icon="mdi-play"
                         size="x-small"
                         variant="tonal"
                         color="cyan-darken-4"
@@ -120,26 +159,57 @@
                             })
                         "
                       >
-                        <v-icon>mdi-play</v-icon>
                       </v-btn>
                       <v-btn
                         v-if="
                           audioPlayerState.selectedMediaDetails !== null &&
                           audioPlayerState.selectedMediaDetails.id ===
-                            +item['ID']
+                            +item['ID'] &&
+                          !audioPlayerState.isPaused
                         "
-                        icon
+                        icon="mdi-pause"
                         size="x-small"
-                        variant="tonal"
+                        :variant="
+                          audioPlayerState.selectedMediaDetails !== null &&
+                          audioPlayerState.selectedMediaDetails.id ===
+                            +item['ID'] &&
+                          !audioPlayerState.isPaused
+                            ? 'elevated'
+                            : 'tonal'
+                        "
                         color="cyan-darken-4"
                         title="pause-surah"
                         @click="() => audioPlayerState.pauseMedia()"
                       >
-                        <v-icon>mdi-pause</v-icon>
                       </v-btn>
+                      <v-btn
+                        v-if="reciterDetails"
+                        size="x-small"
+                        icon="mdi-download"
+                        color="cyan-darken-3"
+                        @click="
+                          downloadFile({
+                            url: `${reciterDetails.reciter.moshaf[selectedMoshafIdx].server}${item['ID']}.mp3`,
+                            fileName: `${reciterDetails.reciter.name}-${item.surahName}.mp3`,
+                          })
+                        "
+                        class="ms-3"
+                      ></v-btn>
                     </td>
-                  </tr>
+                  </tr> -->
                 </tbody>
+                <template slot:bottom></template>
+                <tfoot>
+                  <tr class="bg-cyan-darken-4">
+                    <td colspan="2">
+                      <div class="d-flex ga-3 align-center justify-center">
+                        <p>غدد العناصر</p>
+                        <p>112</p>
+                      </div>
+                    </td>
+                    <td colspan="4"></td>
+                  </tr>
+                </tfoot>
               </v-table>
             </template>
           </v-card>
@@ -152,13 +222,14 @@
 
 <script setup lang="ts">
 import SideMenu from '@/components/SideMenu.vue'
+import SurahTableCard from '@/components/SurahTableCard.vue'
 import { useSideMenuState } from '@/stores/sideMenuState'
 import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
 import { ref, watch, computed, toRaw, onMounted } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
 import { getReciterDetails } from '@/constants/quran'
-import { prefixSurahNumber } from '@/utils/helpers'
+import { prefixSurahNumber, downloadFile } from '@/utils/helpers'
 
 // states
 
@@ -199,6 +270,10 @@ const suwarHeaders = [
   {
     key: 'نوع التلاوة',
     title: 'نوع التلاوة',
+  },
+  {
+    key: 'احراءات',
+    title: 'احراءات',
   },
 ]
 

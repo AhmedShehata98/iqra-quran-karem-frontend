@@ -2,13 +2,10 @@ import { prefixSurahNumber } from '@/utils/helpers'
 import { defineStore } from 'pinia'
 import { ref, reactive, watch, onUnmounted } from 'vue'
 
-type CurrentPlayingSurah = Surah & {
-  surahURL: string
-}
 export const useAudioPlayerStore = defineStore('audio-player-store', () => {
   let audioMetaInterval = 0
   const audio = reactive(new Audio())
-  const mediaList = reactive<Surah[]>([])
+  const mediaList = reactive<Array<Surah>>([])
   const selectedMediaDetails = ref<Surah | null>(null)
   const selectedMediaCursor = ref<number | null>(null)
   const isLastMediaElem = ref<boolean>(false)
@@ -19,6 +16,7 @@ export const useAudioPlayerStore = defineStore('audio-player-store', () => {
   const currentTime = ref<number>(0)
   const isPaused = ref<boolean>(false)
   const isShownPlayer = ref<boolean>(false)
+  const isShuffled = ref<boolean>(false)
 
   const setToggleShowPlayer = (value: boolean) => {
     isShownPlayer.value = value
@@ -27,6 +25,7 @@ export const useAudioPlayerStore = defineStore('audio-player-store', () => {
   const setServerURL = (url: string) => (serverURL.value = url)
   const setMediaList = (media: Surah[]) => mediaList.push(...media)
   const setVolume = (vol: number) => (volume.value = vol)
+  const setShuffleMedia = () => (isShuffled.value = !isShuffled.value)
   const playMedia = async () => {
     try {
       await audio.play()
@@ -149,29 +148,26 @@ export const useAudioPlayerStore = defineStore('audio-player-store', () => {
   }
   const setNextMedia = () => {
     if (!selectedMediaCursor.value)
-      throw new Error(
-        `Selected media cursor is not available , got ${selectedMediaCursor.value}`,
-      )
-    const cursor = selectedMediaCursor.value++
-    setMediaTarget(cursor)
-    handleGetPlayData({
-      mediaId: cursor,
-      cb: async (isSuccess) => (isSuccess ? await playMedia() : null),
-    })
+      throw new Error('media index is not available or undefined')
+    const cursor = ++selectedMediaCursor.value
+    selectedMediaCursor.value = cursor
+    selectedMediaDetails.value = mediaList[cursor]
+    playMedia()
   }
   const setPrevMedia = async () => {
     if (!selectedMediaCursor.value)
-      throw new Error(
-        `Selected media cursor is not available , got ${selectedMediaCursor.value}`,
-      )
-    const cursor = selectedMediaCursor.value--
-    setMediaTarget(cursor)
-    handleGetPlayData({
-      mediaId: cursor,
-      cb: async (isSuccess) => (isSuccess ? await playMedia() : null),
-    })
+      throw new Error('media index is not available or undefined')
+    const cursor = --selectedMediaCursor.value
+    selectedMediaCursor.value = cursor
+    selectedMediaDetails.value = mediaList[cursor]
+    playMedia()
   }
-
+  const playShuffledMedia = () => {
+    const cursor = Math.round(Math.random() * 114)
+    selectedMediaDetails.value = mediaList[cursor]
+    selectedMediaCursor.value = cursor
+    playMedia()
+  }
   const playListenerMethod = () => {
     isPaused.value = false
   }
@@ -179,7 +175,11 @@ export const useAudioPlayerStore = defineStore('audio-player-store', () => {
     isPaused.value = true
   }
   const endedListenerMethod = () => {
-    setNextMedia()
+    if (isShuffled.value) {
+      playShuffledMedia()
+    } else {
+      setNextMedia()
+    }
   }
   watch(
     () => [serverURL.value, selectedMediaCursor.value],
@@ -226,6 +226,9 @@ export const useAudioPlayerStore = defineStore('audio-player-store', () => {
     currentTime,
     isPaused,
     isShownPlayer,
+    isShuffled,
+    setShuffleMedia,
+    playShuffledMedia,
     setVolume,
     setToggleShowPlayer,
     setInitialStateData,
