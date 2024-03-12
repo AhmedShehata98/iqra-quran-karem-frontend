@@ -123,26 +123,16 @@ onUnmounted(() => {
         class="flex-column"
       >
         <h4 class="mt-6 text-capitalize">القراء المفضلين لك</h4>
-        <v-col>
-          <v-sheet class="mb-3 pa-3" color="grey-lighten-3" rounded="12">
-            <v-slide-group show-arrows height="425" class="ga-3 py-2">
-              <v-slide-group-item
-                v-for="reciter in reciterState.favoriteReciters"
-                :key="reciter.id"
-              >
-                <reciter-card
-                  :reciter="reciter"
-                  max-width="240"
-                  :class="
-                    reciterState.isFavoriteReciter(reciter.id) &&
-                    'isFavoriteReciter ma-2'
-                  "
-                  @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
-                ></reciter-card>
-              </v-slide-group-item>
-            </v-slide-group>
-          </v-sheet>
-        </v-col>
+        <!-- <v-col>
+          <reciter-card
+            :reciter="reciter"
+            :class="
+              reciterState.isFavoriteReciter(reciter.id) &&
+              'isFavoriteReciter ma-2 '
+            "
+            @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
+          ></reciter-card>
+        </v-col> -->
       </v-row>
       <v-row class="flex-column">
         <h4 class="mt-6 text-capitalize">قائمة القراء</h4>
@@ -155,40 +145,37 @@ onUnmounted(() => {
             recitersError?.message || 'مشكلة , حدث خطأ ما برجاء المحاولة مجددأ'
           "
         ></v-alert>
-
-        <v-col v-if="isFetched && responseReciters">
-          <v-sheet
-            v-for="items in responseReciters.reciters"
-            :key="items.letter"
-            class="mb-10 pa-3"
-            color="grey-lighten-3"
-            rounded="12"
-          >
-            <div class="mb-4 mt-2">
-              <b>أسم يبدأ بحرف </b>
-              <v-chip variant="tonal" color="gray" class="px-5 text-uppercase">
-                {{ items.letter }}</v-chip
-              >
-            </div>
-            <v-slide-group show-arrows height="425" mandatory class="ga-3 py-2">
-              <v-slide-group-item
-                v-for="reciter in items.data"
-                :key="reciter.id"
-              >
-                <reciter-card
-                  :reciter="reciter"
-                  :class="
-                    reciterState.isFavoriteReciter(reciter.id)
-                      ? 'isFavoriteReciter ma-2'
-                      : 'ma-2'
-                  "
-                  @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
-                ></reciter-card>
-              </v-slide-group-item>
-            </v-slide-group>
-          </v-sheet>
-        </v-col>
       </v-row>
+      <template v-if="isFetched && responseReciters.reciters">
+        <v-row
+          v-for="(reciterGroup, idx) in responseReciters.reciters"
+          :key="idx"
+        >
+          <v-sheet color="grey-lighten-3" class="w-100 mb-4 mt-2 py-3 px-4">
+            <b>أسم يبدأ بحرف </b>
+            <v-chip variant="tonal" color="gray" class="px-5 text-uppercase">
+              {{ reciterGroup.letter }}</v-chip
+            >
+          </v-sheet>
+          <v-col
+            cols="6"
+            sm="6"
+            md="4"
+            lg="3"
+            v-for="reciter in reciterGroup.data"
+            :key="reciter.id"
+          >
+            <reciter-card
+              :reciter="reciter"
+              :class="
+                reciterState.isFavoriteReciter(reciter.id) &&
+                'isFavoriteReciter '
+              "
+              @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
+            ></reciter-card>
+          </v-col>
+        </v-row>
+      </template>
       <v-row class="mb-6">
         <v-btn
           v-if="responseReciters"

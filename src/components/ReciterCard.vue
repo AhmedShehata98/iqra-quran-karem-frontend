@@ -1,52 +1,50 @@
 <script setup lang="ts">
-import { ref } from "vue";
-const { reciter } = defineProps<{ reciter: Reciter }>();
-const emits = defineEmits(["onFavoriteClick"]);
-const isShownOverlay = ref(true);
+import { ref, reactive } from 'vue'
+const { reciter } = defineProps<{ reciter: Reciter }>()
+const emits = defineEmits(['onFavoriteClick'])
+const cardColors = reactive([
+  'green-darken-4',
+  'brown-darken-4',
+  'blue-grey-darken-4',
+  'purple-darken-4',
+  'indigo-darken-4',
+])
+const isShownOverlay = ref(true)
 </script>
 <template>
   <v-card
-    variant="flat"
-    class="w-25 flex-shrink-0"
-    color="cyan-darken-3"
-    id="reciter-card"
+    :color="cardColors[Math.floor(Math.random() * cardColors.length)]"
+    rounded
   >
-    <v-img
-      class="align-end text-white"
-      :src="reciter.img || undefined"
-      height="200"
-      cover
-    >
-      <v-overlay contained v-model="isShownOverlay">
-        <v-btn
-          id="favorite-reciter-btn"
-          color="grey-darken-4"
-          variant="elevated"
-          class="ma-2"
-          size="small"
-          icon
-          @click="(ev: Event) => emits('onFavoriteClick', ev)"
-        >
-          <v-icon id="heart-outline" size="x-large">mdi-heart-outline</v-icon>
-          <v-icon id="heart" class="d-none" size="x-large">mdi-heart</v-icon>
-        </v-btn>
+    <v-img :src="reciter.img" height="230" cover>
+      <v-overlay
+        contained
+        v-model="isShownOverlay"
+        class="d-flex justify-center align-center"
+      >
+        <v-icon size="xxx-large">mdi-playlist-play</v-icon>
       </v-overlay>
     </v-img>
-    <v-card-item>
-      <v-card-title>{{ reciter.name }}</v-card-title>
-      <v-card-text v-if="reciter.bio" class="text-caption">{{
-        reciter.bio.slice(0, 62) + "..." || "لا تتوفر معلومات عنه"
-      }}</v-card-text>
-      <v-card-actions class="mt-auto">
-        <v-btn
-          color="orange-lighten-3"
-          variant="flat"
-          prepend-icon="mdi-playlist-play"
-          :href="`reciter/${reciter.id}`"
-        >
-          <p>قائمة التشغيل</p>
-        </v-btn>
-      </v-card-actions>
+    <v-card-item class="pb-10 pt-6">
+      <v-row>
+        <v-col cols="7">
+          <v-card-title class="text-body-1">{{ reciter.name }}</v-card-title>
+        </v-col>
+        <v-col cols="4" class="d-flex px-0 ga-2">
+          <v-btn
+            size="x-small"
+            variant="text"
+            icon="mdi-heart"
+            class="text-body-2"
+          ></v-btn>
+          <v-btn
+            size="x-small"
+            variant="text"
+            icon="mdi-play"
+            class="text-h6"
+          ></v-btn>
+        </v-col>
+      </v-row>
     </v-card-item>
   </v-card>
 </template>
