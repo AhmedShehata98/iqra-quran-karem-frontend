@@ -38,20 +38,30 @@
                 <v-card-title>{{ reciterDetails?.reciter.name }}</v-card-title>
                 <v-card-text>{{ reciterDetails?.reciter.bio }}</v-card-text>
               </v-card-item>
-              <v-chip-group
-                selected-class="cyan-darken-4"
-                class="bg-grey-lighten-2"
-                variant="flat"
+              <v-item-group
+                v-model="selectedMoshafId"
+                class="py-2 px-4"
                 mandatory
               >
-                <v-chip
+                <v-item
                   v-for="moshafType in reciterDetails?.reciter.moshaf"
                   :key="moshafType.id"
-                  @click="() => handleSelectMoshafType(moshafType.id)"
+                  v-slot="{ isSelected, toggle }"
+                  :value="moshafType.id"
                 >
-                  {{ moshafType.name }}
-                </v-chip>
-              </v-chip-group>
+                  <v-btn
+                    variant="flat"
+                    :color="isSelected ? 'cyan-darken-4' : 'grey-lighten-2'"
+                    @click="
+                      () => {
+                        handleSelectMoshafType(toggle)
+                      }
+                    "
+                  >
+                    {{ moshafType.name }}
+                  </v-btn>
+                </v-item>
+              </v-item-group>
             </v-card>
           </v-sheet>
         </v-col>
@@ -73,26 +83,14 @@
                 single-line
               ></v-text-field>
             </template>
-            <template v-if="isFetched">
-              <!-- <v-data-table
-                :headers="suwarHeaders"
-                :items="suwarItems"
-                :item-value="(item: any) => item.ID"
-                v-model="selectedSurah"
-                :search="searchTerm"
-                select-strategy="single"
-                :loading="isLoading"
-                density="comfortable"
-                show-select
-                hover
-              >
-              </v-data-table> -->
+            <template v-if="isFetchedReciterDetails && suwarItems">
               <v-table
                 hover
                 density="comfortable"
                 height="65vh"
                 fixed-footer
                 fixed-header
+                :loading="isLoadingMoshaf"
               >
                 <thead>
                   <tr>
@@ -111,94 +109,10 @@
                     :key="item['ID']"
                     :suwarItems="item"
                     :reciterName="reciterDetails.reciter.name"
-                    :server="
-                      reciterDetails.reciter.moshaf[selectedMoshafIdx].server
-                    "
+                    :server="moshaf.moshafType.server"
                   ></surah-table-card>
-                  <!-- <tr
-                    v-for="item in suwarItems.filter((surah: any) =>
-                      surah.surahName
-                        .toLowerCase()
-                        .startsWith(searchTerm.toLowerCase()),
-                    )"
-                    :class="
-                      audioPlayerState.selectedMediaDetails !== null &&
-                      audioPlayerState.selectedMediaDetails.id ===
-                        +item['ID'] &&
-                      !audioPlayerState.isPaused &&
-                      'bg-teal-lighten-3'
-                    "
-                    :key="item['ID']"
-                  >
-                    <td>{{ item['ID'] }}</td>
-                    <td>{{ item.surahName }}</td>
-                    <td>{{ item.surahLocation }}</td>
-                    <td>{{ item.moshafType }}</td>
-                    <td>
-                      <v-btn
-                        v-if="
-                          audioPlayerState.selectedMediaDetails === null ||
-                          audioPlayerState.selectedMediaDetails.id !==
-                            +item['ID'] ||
-                          audioPlayerState.isPaused
-                        "
-                        icon="mdi-play"
-                        size="x-small"
-                        variant="tonal"
-                        color="cyan-darken-4"
-                        title="play-surah"
-                        @click="
-                          () =>
-                            audioPlayerState.handleGetPlayData({
-                              volume: 0.7,
-                              mediaId: +item['ID'],
-                              cb: async (isSuccess) =>
-                                isSuccess
-                                  ? await audioPlayerState.playMedia()
-                                  : null,
-                            })
-                        "
-                      >
-                      </v-btn>
-                      <v-btn
-                        v-if="
-                          audioPlayerState.selectedMediaDetails !== null &&
-                          audioPlayerState.selectedMediaDetails.id ===
-                            +item['ID'] &&
-                          !audioPlayerState.isPaused
-                        "
-                        icon="mdi-pause"
-                        size="x-small"
-                        :variant="
-                          audioPlayerState.selectedMediaDetails !== null &&
-                          audioPlayerState.selectedMediaDetails.id ===
-                            +item['ID'] &&
-                          !audioPlayerState.isPaused
-                            ? 'elevated'
-                            : 'tonal'
-                        "
-                        color="cyan-darken-4"
-                        title="pause-surah"
-                        @click="() => audioPlayerState.pauseMedia()"
-                      >
-                      </v-btn>
-                      <v-btn
-                        v-if="reciterDetails"
-                        size="x-small"
-                        icon="mdi-download"
-                        color="cyan-darken-3"
-                        @click="
-                          downloadFile({
-                            url: `${reciterDetails.reciter.moshaf[selectedMoshafIdx].server}${item['ID']}.mp3`,
-                            fileName: `${reciterDetails.reciter.name}-${item.surahName}.mp3`,
-                          })
-                        "
-                        class="ms-3"
-                      ></v-btn>
-                    </td>
-                  </tr> -->
                 </tbody>
-                <template slot:bottom></template>
+
                 <tfoot>
                   <tr class="bg-cyan-darken-4">
                     <td colspan="2">
@@ -225,18 +139,28 @@ import SideMenu from '@/components/SideMenu.vue'
 import SurahTableCard from '@/components/SurahTableCard.vue'
 import { useSideMenuState } from '@/stores/sideMenuState'
 import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
-import { ref, watch, computed, toRaw, onMounted } from 'vue'
+import {
+  ref,
+  watch,
+  computed,
+  toRaw,
+  onMounted,
+  onBeforeMount,
+  onCreated,
+  onBeforeCreated,
+  onUpdated,
+} from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
-import { getReciterDetails } from '@/constants/quran'
-import { prefixSurahNumber, downloadFile } from '@/utils/helpers'
+import { getReciterDetails, getAllMoshafWays } from '@/constants/quran'
+import { prefixSurahNumber } from '@/utils/helpers'
 
 // states
 
 const route = useRoute()
 const {
   isLoading,
-  isFetched,
+  isFetched: isFetchedReciterDetails,
   isError,
   error,
   data: reciterDetails,
@@ -244,17 +168,31 @@ const {
   queryKey: ['reciter-details', route.params.reciterId.toString()],
   queryFn: () => getReciterDetails(route.params.reciterId.toString()),
 })
+
+const selectedMoshafId = ref(null)
+const {
+  data: moshaf,
+  isLoading: isLoadingMoshaf,
+  isFetched: isFetchedMoshaf,
+  refetch: refetchMoshaf,
+} = useQuery({
+  queryKey: [
+    'moshaf',
+    isFetchedReciterDetails.value,
+    route.params.reciterId,
+    selectedMoshafId.value,
+  ],
+  queryFn: () =>
+    getAllMoshafWays({
+      reciterId: route.params.reciterId.toString(),
+      moshafId:
+        selectedMoshafId.value || reciterDetails.value.reciter.moshaf[0].id,
+    }),
+})
 const sideMenuState = useSideMenuState()
 const audioPlayerState = useAudioPlayerStore()
 const searchTerm = ref('')
-let selectedMoshafIdx = ref(0)
 const suwarHeaders = [
-  // {
-  //   align: 'start',
-  //   key: 'ID',
-  //   sortable: true,
-  //   title: 'ID',
-  // },
   {
     key: 'ID',
     title: 'ID',
@@ -279,15 +217,13 @@ const suwarHeaders = [
 
 //computed
 const suwarItems = computed(() => {
-  if (isFetched && reciterDetails.value) {
-    const moshafTarget = toRaw(reciterDetails.value).reciter.moshaf[
-      selectedMoshafIdx.value
-    ]
-    return moshafTarget.suwar.map((m: Surah) => ({
+  if (isFetchedMoshaf.value) {
+    const suwar = toRaw(moshaf.value).moshafType.suwar
+    return suwar.map((m: Surah) => ({
       ID: prefixSurahNumber(m.id),
       surahName: m.name,
       surahLocation: m.mekkia === 1 ? 'مكة' : 'المدينة',
-      moshafType: moshafTarget.name,
+      moshafType: toRaw(moshaf.value).moshafType.name,
     }))
   }
   return []
@@ -295,37 +231,24 @@ const suwarItems = computed(() => {
 
 // methods
 const handleCloseMenu = () => sideMenuState.setToggle()
-const handleSelectMoshafType = (moshafId: number) => {
-  if (isFetched && reciterDetails.value) {
-    const moshafType = toRaw(reciterDetails.value).reciter.moshaf.findIndex(
-      (m: Moshaf) => m.id === moshafId,
-    )
-    selectedMoshafIdx.value = moshafType
-  }
+const handleSelectMoshafType = (toggle: () => void) => {
+  toggle()
+  refetchMoshaf()
 }
 
 // watchers
 
-watch(
-  () => [isFetched, reciterDetails.value, selectedMoshafIdx.value],
-  () => {
-    if (isFetched && reciterDetails.value) {
-      const moshafTarget = toRaw(reciterDetails.value).reciter.moshaf[
-        selectedMoshafIdx.value
-      ]
-      audioPlayerState.setInitialStateData({
-        mediaList: moshafTarget.suwar,
-        serverURL: moshafTarget.server,
-      })
-    }
-  },
-)
-
-onMounted(() => {
-  if (isFetched && reciterDetails.value) {
-    selectedMoshafIdx.value = toRaw(reciterDetails.value).reciter.moshaf.at(0)
-  }
-})
+// watch(
+//   () => [isFetchedReciterDetails, reciterDetails, selectedMoshafType],
+//   () => {
+//     if (isFetchedReciterDetails && reciterDetails.value) {
+//       audioPlayerState.setInitialStateData({
+//         mediaList: selectedMoshafType.suwar,
+//         serverURL: selectedMoshafType.server,
+//       })
+//     }
+//   },
+// )
 </script>
 
 <style lang="css" scoped></style>

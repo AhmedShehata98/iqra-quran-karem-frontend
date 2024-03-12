@@ -45,14 +45,15 @@ export async function getAllSuwar({
   }
 }
 export async function getAllMoshafWays({
-  lang = 'ara',
+  reciterId,
+  moshafId,
 }: {
-  lang?: string
+  reciterId?: string
+  moshafId?: number
 }): Promise<Moshaf[]> {
   try {
     const reciters = await QuranAxios({
-      url: ENDPOINTS.moshaf,
-      params: { lang },
+      url: `${ENDPOINTS.moshaf}/${reciterId}/${moshafId}`,
     })
     return reciters.data
   } catch (error) {

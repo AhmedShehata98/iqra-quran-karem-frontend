@@ -33,9 +33,6 @@ const page = ref(1)
 //
 const handleCloseMenu = () => sideMenuState.setToggle()
 
-function handleSelectReciter(reciter: Reciter) {
-  reciterState.setReciter(reciter)
-}
 function handleFavorites(data: Reciter, ev: Event) {
   const reciterCardRef = (ev.target as HTMLButtonElement).closest(
     '#reciter-card',
@@ -50,9 +47,7 @@ function handleFavorites(data: Reciter, ev: Event) {
 
   console.log(reciterCardRef)
 }
-function handleRemoveFavorite(reciterId: string) {
-  reciterState.removeFavoriteReciter(reciterId)
-}
+
 function determineScrollY() {
   const offsetTop = window.pageYOffset || window.screenY
   scrollOffset.value = offsetTop
@@ -196,6 +191,7 @@ onUnmounted(() => {
       </v-row>
       <v-row class="mb-6">
         <v-btn
+          v-if="responseReciters"
           block
           color="grey-lighten-2"
           variant="flat"
