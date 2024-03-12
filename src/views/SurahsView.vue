@@ -238,17 +238,17 @@ const handleSelectMoshafType = (toggle: () => void) => {
 
 // watchers
 
-// watch(
-//   () => [isFetchedReciterDetails, reciterDetails, selectedMoshafType],
-//   () => {
-//     if (isFetchedReciterDetails && reciterDetails.value) {
-//       audioPlayerState.setInitialStateData({
-//         mediaList: selectedMoshafType.suwar,
-//         serverURL: selectedMoshafType.server,
-//       })
-//     }
-//   },
-// )
+watch(
+  () => [moshaf.value],
+  () => {
+    if (moshaf.value) {
+      audioPlayerState.setInitialStateData({
+        mediaList: moshaf.value.moshafType.suwar,
+        serverURL: moshaf.value.moshafType.server,
+      })
+    }
+  },
+)
 </script>
 
 <style lang="css" scoped></style>
