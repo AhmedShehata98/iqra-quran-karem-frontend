@@ -8,11 +8,13 @@
         : ''
     "
   >
-    <td>{{ props.suwarItems['ID'] }}</td>
-    <td>{{ props.suwarItems.surahName }}</td>
-    <td>{{ props.suwarItems.surahLocation }}</td>
-    <td>{{ props.suwarItems.moshafType }}</td>
-    <td>
+    <td class="table-data t-id">{{ props.suwarItems["ID"] }}</td>
+    <td class="table-data t-name">{{ props.suwarItems.surahName }}</td>
+    <td class="table-data t-surah-location">
+      {{ props.suwarItems.surahLocation }}
+    </td>
+    <td class="table-data t-moshaf-type">{{ props.suwarItems.moshafType }}</td>
+    <td class="table-data t-actions">
       <v-btn
         v-if="
           audioPlayerState.selectedMediaDetails === null ||
@@ -26,14 +28,11 @@
         color="cyan-darken-4"
         title="play-surah"
         @click="
-          () => {
-            audioPlayerState.handleGetPlayData({
-              volume: 0.7,
+          () =>
+            audioPlayerState.play({
+              volume: 0.65,
               mediaId: +props.suwarItems['ID'],
-              cb: async (isSuccess) =>
-                isSuccess ? await audioPlayerState.playMedia() : null,
             })
-          }
         "
       >
       </v-btn>
@@ -78,22 +77,39 @@
   </tr>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
+import { ref } from "vue";
+import { useAudioPlayerStore } from "@/stores/audioPlayerStore";
 // import { downloadFile } from '@/utils/helpers'
-import useDownloadMedia from '@/hooks/useDownloadMedia'
+import useDownloadMedia from "@/hooks/useDownloadMedia";
 
 const props = defineProps<{
   suwarItems: {
-    ID: string
-    surahName: string
-    moshaf: string
-    surahLocation: string
-  }
-  reciterName: string
-  server: string
-}>()
+    ID: string;
+    surahName: string;
+    moshaf: string;
+    surahLocation: string;
+  };
+  reciterName: string;
+  server: string;
+}>();
 
-const audioPlayerState = useAudioPlayerStore()
-const { isLoading: isDownloading, isError, downloadFile } = useDownloadMedia()
+const audioPlayerState = useAudioPlayerStore();
+const { isLoading: isDownloading, isError, downloadFile } = useDownloadMedia();
 </script>
+<style lang="css" scoped>
+.table-data {
+  padding: 0px;
+
+  text-align: center;
+  white-space: nowrap;
+}
+.table-data.t-actions {
+  min-width: 120px;
+  max-width: 120px;
+}
+.table-data.t-surah-location,
+.table-data.t-name {
+  min-width: 110px;
+  max-width: 110px;
+}
+</style>

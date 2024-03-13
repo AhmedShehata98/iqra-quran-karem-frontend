@@ -1,223 +1,206 @@
-import { prefixSurahNumber } from '@/utils/helpers'
-import { defineStore } from 'pinia'
-import { ref, reactive, watch, onUnmounted } from 'vue'
+import { defineStore } from "pinia";
+import { ref, reactive, onMounted, onUnmounted } from "vue";
+import { prefixSurahNumber } from "@/utils/helpers";
 
-export const useAudioPlayerStore = defineStore('audio-player-store', () => {
-  let audioMetaInterval = 0
-  const audio = reactive(new Audio())
-  const mediaList = reactive<Array<Surah>>([])
-  const selectedMediaDetails = ref<Surah | null>(null)
-  const selectedMediaCursor = ref<number | null>(null)
-  const isLastMediaElem = ref<boolean>(false)
-  const isFirstMediaElem = ref<boolean>(false)
-  const serverURL = ref<string | null>(null)
-  const volume = ref<number>(0.64)
-  const durationTime = ref<number>(0)
-  const currentTime = ref<number>(0)
-  const isPaused = ref<boolean>(false)
-  const isShownPlayer = ref<boolean>(false)
-  const isShuffled = ref<boolean>(false)
+interface SelectedMediaType extends Surah {
+  url: string;
+}
+export const useAudioPlayerStore = defineStore("audio-player-store", () => {
+  let audioMetaInterval = 0;
+  const audio = reactive(new Audio());
+  const moshaf = ref<Moshaf | null>(null);
+  const selectedMediaDetails = ref<SelectedMediaType | null>(null);
+  const isLastMediaElem = ref<boolean>(false);
+  const isFirstMediaElem = ref<boolean>(false);
+  const volume = ref<number>(0.64);
+  const durationTime = ref<number>(0);
+  const currentTime = ref<number>(0);
+  const isPaused = ref<boolean>(false);
+  const isShownPlayer = ref<boolean>(false);
+  const isShuffled = ref<boolean>(false);
 
   const setToggleShowPlayer = (value: boolean) => {
-    isShownPlayer.value = value
-  }
+    isShownPlayer.value = value;
+  };
 
-  const setServerURL = (url: string) => (serverURL.value = url)
-  const setMediaList = (media: Surah[]) => mediaList.push(...media)
-  const setVolume = (vol: number) => (volume.value = vol)
-  const setShuffleMedia = () => (isShuffled.value = !isShuffled.value)
+  const setMoshaf = (data: Moshaf) => (moshaf.value = data);
+  const setVolume = (vol: number) => (volume.value = vol);
+  const selectCurrentMedia = (media: SelectedMediaType) =>
+    (selectedMediaDetails.value = media);
+
+  const setShuffleMedia = () => (isShuffled.value = !isShuffled.value);
   const playMedia = async () => {
     try {
-      await audio.play()
+      await audio.play();
     } catch (error: any) {
-      throw new Error(`something went wrong: ${error.message}`)
+      throw new Error(`something went wrong: ${error.message}`);
     }
-  }
+  };
   const pauseMedia = async () => {
     try {
-      await audio.pause()
+      await audio.pause();
     } catch (error: any) {
-      throw new Error(`something went wrong: ${error.message}`)
+      throw new Error(`something went wrong: ${error.message}`);
     }
-  }
+  };
   const setIsLastMediaElement = () => {
-    if (selectedMediaCursor.value === null) {
-      console.error('No media element selected')
-      return false
+    if (selectedMediaDetails.value === null) {
+      console.error("No media element selected");
+      return false;
     }
-    if (selectedMediaCursor.value >= mediaList.length - 1) {
-      return true
+    if (moshaf.value?.suwar === undefined)
+      throw new Error("there is no suwar available");
+    if (selectedMediaDetails.value.id >= moshaf.value?.suwar.length) {
+      return true;
     } else {
-      return false
+      return false;
     }
-  }
+  };
   const setIsFirstMediaElement = () => {
-    if (selectedMediaCursor.value === null) {
-      console.error('No media element selected')
-      return false
+    if (selectedMediaDetails.value === null) {
+      console.error("No media element selected");
+      return false;
     }
-    if (selectedMediaCursor.value <= 0) {
-      return true
+    if (selectedMediaDetails.value.id <= 1) {
+      return true;
     } else {
-      return false
+      return false;
     }
-  }
-  const setMediaTarget = (mediaId: number) => {
-    const media = mediaList.find((media) => media.id === mediaId)
-    if (media === undefined)
-      throw new Error(`There's no media with id: ${mediaId} .`)
-    selectedMediaDetails.value = media
-    return media
-  }
-  const setCurrentMediaCursor = (mediaId: number) => {
-    const mediaIdx = mediaList.findIndex((media) => media.id === mediaId)
-    if (mediaIdx === -1)
-      throw new Error(`There's no media with id: ${mediaId} .`)
-    selectedMediaCursor.value = mediaIdx
-    return mediaIdx
-  }
-
-  const setInitialStateData = ({
-    serverURL,
-    mediaList,
-  }: {
-    mediaList: Surah[]
-    serverURL: string
-  }) => {
-    setServerURL(serverURL)
-    setMediaList(mediaList)
-  }
-
+  };
   const handleGetPlayData = async ({
     volume = 0.65,
     mediaId,
-    url,
     cb,
   }: {
-    volume?: number
-    mediaId: number
-    url?: string
-    cb: (isSuccess: boolean) => void
+    volume?: number;
+    mediaId: number;
+    cb: (isSuccess: boolean) => void;
   }) => {
     try {
-      const media = setMediaTarget(mediaId)
-      setCurrentMediaCursor(mediaId)
-      if (!url) {
-        audio.src = `${serverURL.value}${prefixSurahNumber(media.id)}.mp3`
-      } else {
-        audio.src = `${url}${prefixSurahNumber(media.id)}.mp3`
-      }
-      audio.preload = 'metadata'
-      audio.volume = volume
-      setVolume(volume)
-      isFirstMediaElem.value = setIsFirstMediaElement()
-      isLastMediaElem.value = setIsLastMediaElement()
-      setToggleShowPlayer(true)
-      if (cb) return cb(true)
+      const media = moshaf.value?.suwar.find((surah) => surah.id === mediaId);
+      if (media === undefined)
+        throw new Error(`Media ${mediaId} not found in suwar`);
+      const url = `${moshaf.value?.server}${prefixSurahNumber(media.id)}.mp3`;
+      selectCurrentMedia({
+        ...media,
+        url,
+      });
+      audio.src = url;
+      audio.volume = volume;
+      audio.preload = "metadata";
+      isFirstMediaElem.value = setIsFirstMediaElement();
+      isLastMediaElem.value = setIsLastMediaElement();
+      setVolume(volume);
+      if (cb) return cb(true);
     } catch (error: any) {
-      if (cb) return cb(false)
-      throw new Error(`something went wrong: ${error.message}`)
+      if (cb) return cb(false);
+      throw new Error(`something went wrong: ${error.message}`);
     }
-  }
+  };
+  const play = ({ mediaId, volume }: { volume?: number; mediaId: number }) => {
+    handleGetPlayData({
+      mediaId,
+      volume,
+      cb: async (isSuccess) =>
+        isSuccess
+          ? await playMedia()
+          : console.error("ERROR , could not get play this media"),
+    });
+    setToggleShowPlayer(true);
+  };
   const handlePauseMedia = async () => {
     try {
-      if (!isPaused.value) return await pauseMedia()
+      if (!isPaused.value) return await pauseMedia();
     } catch (error: any) {
-      throw new Error(`something went wrong: ${error.message}`)
+      throw new Error(`something went wrong: ${error.message}`);
     }
-  }
+  };
   const handleMuteVolume = () => {
-    audio.volume = 0
-    volume.value = 0
-  }
+    audio.volume = 0;
+    volume.value = 0;
+  };
   const handleChangeVolume = (val: number) => {
-    audio.volume = val
-    volume.value = val
-  }
+    audio.volume = val;
+    volume.value = val;
+  };
   const handleUpdateCurrentTime = (time: number) => {
-    currentTime.value = time
-    audio.currentTime = time
-  }
+    currentTime.value = time;
+    audio.currentTime = time;
+  };
   const handleLoadedMetaData = (ev: Event) => {
-    const target = ev.target as HTMLAudioElement
+    const target = ev.target as HTMLAudioElement;
     audioMetaInterval = +setInterval(() => {
-      currentTime.value = target.currentTime
-      durationTime.value = target.duration
-    }, 900)
-    isPaused.value = target.paused
-  }
+      currentTime.value = target.currentTime;
+      durationTime.value = target.duration;
+    }, 900);
+    isPaused.value = target.paused;
+  };
   const setNextMedia = () => {
-    if (!selectedMediaCursor.value)
-      throw new Error('media index is not available or undefined')
-    const cursor = ++selectedMediaCursor.value
-    selectedMediaCursor.value = cursor
-    selectedMediaDetails.value = mediaList[cursor]
-    playMedia()
-  }
+    if (selectedMediaDetails.value === null)
+      throw new Error("No media selected");
+    if (moshaf.value === null) throw new Error("No moshaf data available");
+    const nextMediaId = (selectedMediaDetails.value.id += 1);
+
+    handleGetPlayData({
+      volume: 0.65,
+      mediaId: nextMediaId,
+      cb: async (isSuccess) => (isSuccess ? await playMedia() : null),
+    });
+    setToggleShowPlayer(true);
+  };
   const setPrevMedia = async () => {
-    if (!selectedMediaCursor.value)
-      throw new Error('media index is not available or undefined')
-    const cursor = --selectedMediaCursor.value
-    selectedMediaCursor.value = cursor
-    selectedMediaDetails.value = mediaList[cursor]
-    playMedia()
-  }
-  const playShuffledMedia = () => {
-    const cursor = Math.round(Math.random() * 114)
-    selectedMediaDetails.value = mediaList[cursor]
-    selectedMediaCursor.value = cursor
-    playMedia()
-  }
+    if (selectedMediaDetails.value === null)
+      throw new Error("No media selected");
+    if (moshaf.value === null) throw new Error("No moshaf data available");
+    const nextMediaId = (selectedMediaDetails.value.id -= 1);
+
+    handleGetPlayData({
+      volume: 0.65,
+      mediaId: nextMediaId,
+      cb: async (isSuccess) => (isSuccess ? await playMedia() : null),
+    });
+    setToggleShowPlayer(true);
+  };
+  const setNextShuffledMedia = () => {
+    const nextMediaId = Math.round(Math.random() * 114);
+
+    handleGetPlayData({
+      volume: 0.65,
+      mediaId: nextMediaId,
+      cb: async (isSuccess) => (isSuccess ? await playMedia() : null),
+    });
+    setToggleShowPlayer(true);
+  };
   const playListenerMethod = () => {
-    isPaused.value = false
-  }
+    isPaused.value = false;
+  };
   const pauseListenerMethod = () => {
-    isPaused.value = true
-  }
+    isPaused.value = true;
+    clearInterval(audioMetaInterval);
+  };
   const endedListenerMethod = () => {
     if (isShuffled.value) {
-      playShuffledMedia()
+      setNextShuffledMedia();
     } else {
-      setNextMedia()
+      setNextMedia();
     }
-  }
-  watch(
-    () => [serverURL.value, selectedMediaCursor.value],
-    () => {
-      if (serverURL.value !== null && selectedMediaCursor.value !== null) {
-        audio.addEventListener('loadedmetadata', handleLoadedMetaData)
-      }
-    },
-  )
-  watch(
-    () => [serverURL.value, selectedMediaCursor],
-    () => {
-      audio.addEventListener('playing', playListenerMethod)
-    },
-  )
-  watch(
-    () => [serverURL.value, selectedMediaCursor],
-    () => {
-      audio.addEventListener('pause', pauseListenerMethod)
-      clearInterval(audioMetaInterval)
-    },
-  )
-  watch(
-    () => [serverURL.value, selectedMediaCursor],
-    () => {
-      audio.addEventListener('ended', endedListenerMethod)
-    },
-  )
+  };
+
+  onMounted(() => {
+    audio.addEventListener("playing", playListenerMethod);
+    audio.addEventListener("pause", pauseListenerMethod);
+    audio.addEventListener("loadedmetadata", handleLoadedMetaData);
+    audio.addEventListener("ended", endedListenerMethod);
+  });
 
   onUnmounted(() => {
-    removeEventListener('loadedmetadata', handleLoadedMetaData)
-    removeEventListener('playing', playListenerMethod)
-    removeEventListener('pause', pauseListenerMethod)
-    removeEventListener('ended', endedListenerMethod)
-  })
+    audio.removeEventListener("loadedmetadata", handleLoadedMetaData);
+    audio.removeEventListener("playing", playListenerMethod);
+    audio.removeEventListener("pause", pauseListenerMethod);
+    audio.removeEventListener("ended", endedListenerMethod);
+  });
 
   return {
-    mediaList,
     selectedMediaDetails,
     isLastMediaElem,
     isFirstMediaElem,
@@ -228,18 +211,17 @@ export const useAudioPlayerStore = defineStore('audio-player-store', () => {
     isShownPlayer,
     isShuffled,
     setShuffleMedia,
-    playShuffledMedia,
     setVolume,
     setToggleShowPlayer,
-    setInitialStateData,
-    setNextMedia,
-    setPrevMedia,
-    handleGetPlayData,
-    playMedia,
-    pauseMedia,
-    handlePauseMedia,
-    handleMuteVolume,
+    setMoshaf,
+    next: setNextMedia,
+    nextShuffled: setNextShuffledMedia,
+    prev: setPrevMedia,
+    resume: playMedia,
+    play,
+    pause: pauseMedia,
+    mute: handleMuteVolume,
     handleChangeVolume,
     handleUpdateCurrentTime,
-  }
-})
+  };
+});

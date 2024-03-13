@@ -42,7 +42,7 @@ const isShownOverlay = ref(true);
           cols="12"
           xs="12"
           sm="12"
-          md="4"
+          md="5"
           class="d-flex align-center justify-center px-0 ga-2"
         >
           <v-btn

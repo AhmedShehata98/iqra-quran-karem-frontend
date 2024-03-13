@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useSideMenuState } from '@/stores/sideMenuState'
+import { useSideMenuState } from "@/stores/sideMenuState";
 
-const sideMenuState = useSideMenuState()
+const sideMenuState = useSideMenuState();
 </script>
 <template>
   <v-navigation-drawer
@@ -22,9 +22,12 @@ const sideMenuState = useSideMenuState()
         prepend-icon="mdi-account-group"
         title="القراء"
         value="/reciter"
-        href="/reciter"
         link
-      ></v-list-item>
+        elevation="1"
+        to="/reciter"
+      >
+      </v-list-item>
+
       <!-- <v-list-item
         prepend-icon="mdi-radio"
         title="اذاعة الراديو"
@@ -48,3 +51,4 @@ const sideMenuState = useSideMenuState()
   @apply bg-light-secondary-500 shadow-xl;
 }
 </style>
+import type { RouterLink } from "vue-router";

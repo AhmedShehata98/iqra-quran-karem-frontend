@@ -54,7 +54,7 @@
                     :color="isSelected ? 'cyan-darken-4' : 'grey-lighten-2'"
                     @click="
                       () => {
-                        handleSelectMoshafType(toggle)
+                        handleSelectMoshafType(toggle);
                       }
                     "
                   >
@@ -91,6 +91,10 @@
                 fixed-footer
                 fixed-header
                 :loading="isLoadingMoshaf"
+                :style="{
+                  borderCollapse: collapse,
+                  tableLayout: fixed,
+                }"
               >
                 <thead>
                   <tr>
@@ -131,29 +135,19 @@
 </template>
 
 <script setup lang="ts">
-import SideMenu from '@/components/SideMenu.vue'
-import SurahTableCard from '@/components/SurahTableCard.vue'
-import { useSideMenuState } from '@/stores/sideMenuState'
-import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
-import {
-  ref,
-  watch,
-  computed,
-  toRaw,
-  onMounted,
-  onBeforeMount,
-  onCreated,
-  onBeforeCreated,
-  onUpdated,
-} from 'vue'
-import { useQuery } from '@tanstack/vue-query'
-import { useRoute } from 'vue-router'
-import { getReciterDetails, getAllMoshafWays } from '@/constants/quran'
-import { prefixSurahNumber } from '@/utils/helpers'
+import SideMenu from "@/components/SideMenu.vue";
+import SurahTableCard from "@/components/SurahTableCard.vue";
+import { useSideMenuState } from "@/stores/sideMenuState";
+import { useAudioPlayerStore } from "@/stores/audioPlayerStore";
+import { ref, watch, computed, toRaw } from "vue";
+import { useQuery } from "@tanstack/vue-query";
+import { useRoute } from "vue-router";
+import { getReciterDetails, getAllMoshafWays } from "@/constants/quran";
+import { prefixSurahNumber } from "@/utils/helpers";
 
 // states
 
-const route = useRoute()
+const route = useRoute();
 const {
   isLoading,
   isFetched: isFetchedReciterDetails,
@@ -161,11 +155,11 @@ const {
   error,
   data: reciterDetails,
 } = useQuery({
-  queryKey: ['reciter-details', route.params.reciterId.toString()],
+  queryKey: ["reciter-details", route.params.reciterId.toString()],
   queryFn: () => getReciterDetails(route.params.reciterId.toString()),
-})
+});
 
-const selectedMoshafId = ref(null)
+const selectedMoshafId = ref(null);
 const {
   data: moshaf,
   isLoading: isLoadingMoshaf,
@@ -173,7 +167,7 @@ const {
   refetch: refetchMoshaf,
 } = useQuery({
   queryKey: [
-    'moshaf',
+    "moshaf",
     isFetchedReciterDetails.value,
     route.params.reciterId,
     selectedMoshafId.value,
@@ -184,59 +178,59 @@ const {
       moshafId:
         selectedMoshafId.value || reciterDetails.value.reciter.moshaf[0].id,
     }),
-})
-const sideMenuState = useSideMenuState()
-const audioPlayerState = useAudioPlayerStore()
-const searchTerm = ref('')
+});
+const sideMenuState = useSideMenuState();
+const audioPlayerState = useAudioPlayerStore();
+const searchTerm = ref("");
 const suwarHeaders = [
   {
-    key: 'ID',
-    title: 'ID',
+    key: "ID",
+    title: "ID",
   },
   {
-    key: 'أسم السورة',
-    title: 'أسم السورة',
+    key: "أسم السورة",
+    title: "أسم السورة",
   },
   {
-    key: 'مكان النزول',
-    title: 'مكان النزول',
+    key: "مكان النزول",
+    title: "مكان النزول",
   },
   {
-    key: 'نوع التلاوة',
-    title: 'نوع التلاوة',
+    key: "نوع التلاوة",
+    title: "نوع التلاوة",
   },
   {
-    key: 'احراءات',
-    title: 'احراءات',
+    key: "احراءات",
+    title: "احراءات",
   },
-]
+];
 
 //computed
 const suwarItems = computed(() => {
   if (isFetchedMoshaf.value) {
-    const suwar = toRaw(moshaf.value).moshafType.suwar
+    const suwar = toRaw(moshaf.value).moshafType.suwar;
     return suwar
       .map((m: any) => ({
         ID: prefixSurahNumber(m.id),
         surahName: m.name,
-        surahLocation: m.mekkia === 1 ? 'مكة' : 'المدينة',
+        surahLocation: m.mekkia === 1 ? "مكة" : "المدينة",
         moshafType: toRaw(moshaf.value).moshafType.name,
       }))
       .filter((surah: any) =>
         surah.surahName
           .toLowerCase()
           .startsWith(searchTerm.value.toLowerCase()),
-      )
+      );
   }
-  return []
-})
+  return [];
+});
 
 // methods
-const handleCloseMenu = () => sideMenuState.setToggle()
+const handleCloseMenu = () => sideMenuState.setToggle();
 const handleSelectMoshafType = (toggle: () => void) => {
-  toggle()
-  refetchMoshaf()
-}
+  toggle();
+  refetchMoshaf();
+};
 
 // watchers
 
@@ -244,13 +238,8 @@ watch(
   () => [moshaf.value],
   () => {
     if (moshaf.value) {
-      audioPlayerState.setInitialStateData({
-        mediaList: moshaf.value.moshafType.suwar,
-        serverURL: moshaf.value.moshafType.server,
-      })
+      audioPlayerState.setMoshaf(moshaf.value.moshafType);
     }
   },
-)
+);
 </script>
-
-<style lang="css" scoped></style>

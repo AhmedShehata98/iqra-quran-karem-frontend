@@ -7,7 +7,7 @@
         variant="tonal"
         icon
         color="deep-purple-darken-4"
-        @click="handlePrevMediaElem()"
+        @click="prev()"
         :aria-disabled="audioPlayerState.isFirstMediaElem"
         :disabled="audioPlayerState.isFirstMediaElem"
       >
@@ -19,7 +19,7 @@
         icon
         size="x-large"
         color="deep-purple-darken-4"
-        @click="audioPlayerState.playMedia()"
+        @click="audioPlayerState.resume()"
       >
         <v-icon>mdi-play</v-icon>
       </v-btn>
@@ -29,7 +29,7 @@
         icon
         size="x-large"
         color="deep-purple-darken-4"
-        @click="audioPlayerState.pauseMedia()"
+        @click="audioPlayerState.pause()"
       >
         <v-icon>mdi-pause</v-icon>
       </v-btn>
@@ -40,7 +40,7 @@
         variant="tonal"
         icon
         color="deep-purple-darken-4"
-        @click="handleNextMediaElem()"
+        @click="next()"
       >
         <v-icon>mdi-skip-forward</v-icon>
       </v-btn>
@@ -58,23 +58,22 @@
   </div>
 </template>
 <script setup lang="ts">
-const props = defineProps(['isLastMediaElem', 'isFirstMediaElem'])
-import { audioTimeFormat } from '@/utils/audioTimeFormat'
-import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
-const audioPlayerState = useAudioPlayerStore()
+const props = defineProps(["isLastMediaElem", "isFirstMediaElem"]);
+import { useAudioPlayerStore } from "@/stores/audioPlayerStore";
+const audioPlayerState = useAudioPlayerStore();
 
-function handleNextMediaElem() {
+function next() {
   if (audioPlayerState.isShuffled) {
-    audioPlayerState.playShuffledMedia()
+    audioPlayerState.nextShuffled();
   } else {
-    audioPlayerState.setNextMedia()
+    audioPlayerState.next();
   }
 }
-function handlePrevMediaElem() {
+function prev() {
   if (audioPlayerState.isShuffled) {
-    audioPlayerState.playShuffledMedia()
+    audioPlayerState.nextShuffled();
   } else {
-    audioPlayerState.setPrevMedia()
+    audioPlayerState.prev();
   }
 }
 
@@ -91,7 +90,7 @@ function handlePrevMediaElem() {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 }
 .controls > :nth-child(1) {
   display: flex;
