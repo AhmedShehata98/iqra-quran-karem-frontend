@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, reactive } from "vue";
+import { RouterLink } from "vue-router";
 
 const { reciter, isActive } = defineProps<{
-  reciter: Reciter
-  isActive: boolean
-}>()
-const emits = defineEmits(['onFavoriteClick'])
+  reciter: Reciter;
+  isActive: boolean;
+}>();
+const emits = defineEmits(["onFavoriteClick"]);
 const cardColors = reactive([
-  'green-darken-4',
-  'brown-darken-4',
-  'blue-grey-darken-4',
-  'purple-darken-4',
-  'indigo-darken-4',
-])
-const isShownOverlay = ref(true)
+  "green-darken-4",
+  "brown-darken-4",
+  "blue-grey-darken-4",
+  "purple-darken-4",
+  "indigo-darken-4",
+]);
+const isShownOverlay = ref(true);
 </script>
 <template>
   <v-card
@@ -101,4 +101,3 @@ const isShownOverlay = ref(true)
   }
 }
 </style>
-RouterLink,
