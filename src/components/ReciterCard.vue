@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-const { reciter } = defineProps<{ reciter: Reciter }>()
+import { RouterLink } from 'vue-router'
+
+const { reciter, isActive } = defineProps<{
+  reciter: Reciter
+  isActive: boolean
+}>()
 const emits = defineEmits(['onFavoriteClick'])
 const cardColors = reactive([
   'green-darken-4',
@@ -14,6 +19,9 @@ const isShownOverlay = ref(true)
 <template>
   <v-card
     :color="cardColors[Math.floor(Math.random() * cardColors.length)]"
+    elevation="8"
+    hover
+    ripple
     rounded
   >
     <v-img :src="reciter.img" height="230" cover>
@@ -26,23 +34,35 @@ const isShownOverlay = ref(true)
       </v-overlay>
     </v-img>
     <v-card-item class="pb-10 pt-6">
-      <v-row>
-        <v-col cols="7">
+      <v-row justify="space-between">
+        <v-col cols="12" xs="12" sm="12" md="7">
           <v-card-title class="text-body-1">{{ reciter.name }}</v-card-title>
         </v-col>
-        <v-col cols="4" class="d-flex px-0 ga-2">
+        <v-col
+          cols="12"
+          xs="12"
+          sm="12"
+          md="4"
+          class="d-flex align-center justify-center px-0 ga-2"
+        >
           <v-btn
             size="x-small"
-            variant="text"
-            icon="mdi-heart"
+            :icon="isActive ? 'mdi-heart' : 'mdi-heart-outline'"
+            @click="emits('onFavoriteClick')"
+            width="35px"
+            height="35px"
             class="text-body-2"
           ></v-btn>
-          <v-btn
-            size="x-small"
-            variant="text"
-            icon="mdi-play"
-            class="text-h6"
-          ></v-btn>
+          <router-link :to="`/reciter/${reciter.id}`">
+            <v-btn
+              size="x-small"
+              icon="mdi-play"
+              width="35px"
+              height="35px"
+              class="text-h6"
+            >
+            </v-btn>
+          </router-link>
         </v-col>
       </v-row>
     </v-card-item>
@@ -81,3 +101,4 @@ const isShownOverlay = ref(true)
   }
 }
 </style>
+RouterLink,

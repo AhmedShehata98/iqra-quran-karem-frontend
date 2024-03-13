@@ -162,15 +162,13 @@ onUnmounted(() => {
             sm="6"
             md="4"
             lg="3"
+            class="pa-2"
             v-for="reciter in reciterGroup.data"
             :key="reciter.id"
           >
             <reciter-card
               :reciter="reciter"
-              :class="
-                reciterState.isFavoriteReciter(reciter.id) &&
-                'isFavoriteReciter '
-              "
+              :isActive="reciterState.isFavoriteReciter(reciter.id)"
               @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
             ></reciter-card>
           </v-col>

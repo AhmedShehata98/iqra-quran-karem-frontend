@@ -3,8 +3,9 @@
     :class="
       audioPlayerState.selectedMediaDetails !== null &&
       audioPlayerState.selectedMediaDetails.id === +props.suwarItems['ID'] &&
-      !audioPlayerState.isPaused &&
-      'bg-teal-lighten-3'
+      !audioPlayerState.isPaused
+        ? 'bg-teal-lighten-3 table-layout'
+        : ''
     "
   >
     <td>{{ props.suwarItems['ID'] }}</td>
@@ -25,13 +26,14 @@
         color="cyan-darken-4"
         title="play-surah"
         @click="
-          () =>
+          () => {
             audioPlayerState.handleGetPlayData({
               volume: 0.7,
-              mediaId: +item['ID'],
+              mediaId: +props.suwarItems['ID'],
               cb: async (isSuccess) =>
                 isSuccess ? await audioPlayerState.playMedia() : null,
             })
+          }
         "
       >
       </v-btn>
@@ -54,7 +56,7 @@
         "
         color="cyan-darken-4"
         title="pause-surah"
-        @click="() => audioPlayerState.pauseMedia()"
+        @click="async () => await audioPlayerState.pauseMedia()"
       >
       </v-btn>
       <v-btn
@@ -64,11 +66,11 @@
         color="cyan-darken-3"
         :loading="isDownloading"
         @click="
-          downloadFile({
-            url: `${props.server}${props.suwarItems['ID']}.mp3`,
-            fileName: `${props.reciterName}-${props.suwarItems.surahName}.mp3`,
-            cb: (isLoading) => (isDownloading = isLoading),
-          })
+          async () =>
+            await downloadFile({
+              url: `${props.server}${props.suwarItems['ID']}.mp3`,
+              fileName: `${props.reciterName}-${props.suwarItems.surahName}.mp3`,
+            })
         "
         class="ms-3"
       ></v-btn>
@@ -78,7 +80,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAudioPlayerStore } from '@/stores/audioPlayerStore'
-import { downloadFile } from '@/utils/helpers'
+// import { downloadFile } from '@/utils/helpers'
+import useDownloadMedia from '@/hooks/useDownloadMedia'
 
 const props = defineProps<{
   suwarItems: {
@@ -90,6 +93,7 @@ const props = defineProps<{
   reciterName: string
   server: string
 }>()
-const isDownloading = ref(false)
+
 const audioPlayerState = useAudioPlayerStore()
+const { isLoading: isDownloading, isError, downloadFile } = useDownloadMedia()
 </script>

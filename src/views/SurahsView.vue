@@ -101,11 +101,7 @@
                 </thead>
                 <tbody>
                   <surah-table-card
-                    v-for="item in suwarItems.filter((surah: any) =>
-                      surah.surahName
-                        .toLowerCase()
-                        .startsWith(searchTerm.toLowerCase()),
-                    )"
+                    v-for="item in suwarItems"
                     :key="item['ID']"
                     :suwarItems="item"
                     :reciterName="reciterDetails.reciter.name"
@@ -118,7 +114,7 @@
                     <td colspan="2">
                       <div class="d-flex ga-3 align-center justify-center">
                         <p>غدد العناصر</p>
-                        <p>112</p>
+                        <p>{{ moshaf?.moshafType.suwar.length }}</p>
                       </div>
                     </td>
                     <td colspan="4"></td>
@@ -219,12 +215,18 @@ const suwarHeaders = [
 const suwarItems = computed(() => {
   if (isFetchedMoshaf.value) {
     const suwar = toRaw(moshaf.value).moshafType.suwar
-    return suwar.map((m: Surah) => ({
-      ID: prefixSurahNumber(m.id),
-      surahName: m.name,
-      surahLocation: m.mekkia === 1 ? 'مكة' : 'المدينة',
-      moshafType: toRaw(moshaf.value).moshafType.name,
-    }))
+    return suwar
+      .map((m: any) => ({
+        ID: prefixSurahNumber(m.id),
+        surahName: m.name,
+        surahLocation: m.mekkia === 1 ? 'مكة' : 'المدينة',
+        moshafType: toRaw(moshaf.value).moshafType.name,
+      }))
+      .filter((surah: any) =>
+        surah.surahName
+          .toLowerCase()
+          .startsWith(searchTerm.value.toLowerCase()),
+      )
   }
   return []
 })
