@@ -54,7 +54,7 @@
                     :color="isSelected ? 'cyan-darken-4' : 'grey-lighten-2'"
                     @click="
                       () => {
-                        handleSelectMoshafType(toggle);
+                        handleSelectMoshafType(toggle!);
                       }
                     "
                   >
@@ -91,10 +91,6 @@
                 fixed-footer
                 fixed-header
                 :loading="isLoadingMoshaf"
-                :style="{
-                  borderCollapse: collapse,
-                  tableLayout: fixed,
-                }"
               >
                 <thead>
                   <tr>
@@ -108,7 +104,7 @@
                     v-for="item in suwarItems"
                     :key="item['ID']"
                     :suwarItems="item"
-                    :reciterName="reciterDetails.reciter.name"
+                    :reciterName="reciterDetails?.reciter.name"
                     :server="moshaf.moshafType.server"
                   ></surah-table-card>
                 </tbody>

@@ -16,6 +16,8 @@ interface ReciterResponse {
     data: Reciter[];
     letter: string;
   }[];
+  hasNext: boolean;
+  total: number;
 }
 type ReciterDetailsResponse = {
   message: string;
@@ -45,7 +47,10 @@ interface Surah {
 interface Radio {}
 interface LiveChannel {}
 interface RecitersRecentRead {}
-
+type MoshafResponse = {
+  message: string;
+  moshafType: Moshaf;
+};
 type MediaInfoType = Surah & {};
 type selectedReciterType = {
   reciter: Reciter | undefined;

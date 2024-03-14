@@ -99,8 +99,7 @@ const { isLoading: isDownloading, isError, downloadFile } = useDownloadMedia();
 <style lang="css" scoped>
 .table-data {
   padding: 0px;
-
-  text-align: center;
+  text-align: start;
   white-space: nowrap;
 }
 .table-data.t-actions {

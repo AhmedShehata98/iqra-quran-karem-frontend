@@ -18,6 +18,11 @@ const router = createRouter({
       path: "/reciter/:reciterId",
       component: () => import("@/views/SurahsView.vue"),
     },
+    {
+      name: "NotFound",
+      path: "/:pathMatch(.*)*",
+      component: () => import("@/views/NotFoundView.vue"),
+    },
   ],
 });
 

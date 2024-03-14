@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
-import ReciterCard from '@/components/ReciterCard.vue'
-import { useQuery } from '@tanstack/vue-query'
-import { getAllReciters } from '@/constants/quran'
-import { useReciterState } from '@/stores/reciterState'
-import { useSideMenuState } from '@/stores/sideMenuState'
-import SideMenu from '@/components/SideMenu.vue'
-const sideMenuState = useSideMenuState()
+import { ref, onUnmounted } from "vue";
+import ReciterCard from "@/components/ReciterCard.vue";
+import { useQuery } from "@tanstack/vue-query";
+import { getAllReciters } from "@/constants/quran";
+import { useReciterState } from "@/stores/reciterState";
+import { useSideMenuState } from "@/stores/sideMenuState";
+import SideMenu from "@/components/SideMenu.vue";
+const sideMenuState = useSideMenuState();
 // Import Swiper styles
-import 'swiper/css'
+import "swiper/css";
 
 const {
   data: responseReciters,
@@ -18,68 +18,68 @@ const {
   isFetched,
   refetch,
 } = useQuery({
-  queryKey: ['reciters'],
+  queryKey: ["reciters"],
   queryFn: () => getAllReciters({ page: page.value, limit: limit.value }),
-})
+});
 // states
 //
-const reciterState = useReciterState()
-const isOffline = ref(false)
-const scrollOffset = ref(0)
-const limit = ref(25)
-const page = ref(1)
+const reciterState = useReciterState();
+const isOffline = ref(false);
+const scrollOffset = ref(0);
+const limit = ref(25);
+const page = ref(1);
 
 // methods
 //
-const handleCloseMenu = () => sideMenuState.setToggle()
+const handleCloseMenu = () => sideMenuState.setToggle();
 
 function handleFavorites(data: Reciter, ev: Event) {
   const reciterCardRef = (ev.target as HTMLButtonElement).closest(
-    '#reciter-card',
-  )
+    "#reciter-card",
+  );
   const isFavoriteReciter =
-    reciterCardRef?.classList.contains('isFavoriteReciter')
+    reciterCardRef?.classList.contains("isFavoriteReciter");
   if (isFavoriteReciter) {
-    reciterState.removeFavoriteReciter(data.id)
+    reciterState.removeFavoriteReciter(data.id);
   } else {
-    reciterState.setFavoriteReciter(data)
+    reciterState.setFavoriteReciter(data);
   }
 
-  console.log(reciterCardRef)
+  console.log(reciterCardRef);
 }
 
 function determineScrollY() {
-  const offsetTop = window.pageYOffset || window.screenY
-  scrollOffset.value = offsetTop
+  const offsetTop = window.pageYOffset || window.screenY;
+  scrollOffset.value = offsetTop;
 }
 function goTop() {
-  document.body.scrollIntoView({ behavior: 'smooth' })
+  document.body.scrollIntoView({ behavior: "smooth" });
 }
 function handleShowMore() {
-  page.value += 1
-  refetch()
+  page.value += 1;
+  refetch();
 }
 
 // listeners
 //
-window.addEventListener('online', () => {
-  isOffline.value = false
-})
-window.addEventListener('offline', () => {
-  isOffline.value = true
-})
+window.addEventListener("online", () => {
+  isOffline.value = false;
+});
+window.addEventListener("offline", () => {
+  isOffline.value = true;
+});
 
-window.addEventListener('scroll', determineScrollY)
+window.addEventListener("scroll", determineScrollY);
 
 onUnmounted(() => {
-  window.removeEventListener('offline', () => {
-    isOffline.value = true
-  })
-  window.removeEventListener('online', () => {
-    isOffline.value = false
-  })
-  window.removeEventListener('scroll', determineScrollY)
-})
+  window.removeEventListener("offline", () => {
+    isOffline.value = true;
+  });
+  window.removeEventListener("online", () => {
+    isOffline.value = false;
+  });
+  window.removeEventListener("scroll", determineScrollY);
+});
 </script>
 
 <template>
@@ -99,7 +99,7 @@ onUnmounted(() => {
       <v-progress-linear
         v-if="isLoading"
         height="4"
-        color="teal-darken-1"
+        color="blue-darken-2"
         indeterminate
       ></v-progress-linear>
     </div>
@@ -115,26 +115,45 @@ onUnmounted(() => {
       </v-alert>
     </div>
     <v-container>
-      <v-row
+      <template
         v-if="
           reciterState.favoriteReciters &&
           reciterState.favoriteReciters.length > 0
         "
-        class="flex-column"
       >
-        <h4 class="mt-6 text-capitalize">القراء المفضلين لك</h4>
-        <!-- <v-col>
-          <reciter-card
-            :reciter="reciter"
-            :class="
-              reciterState.isFavoriteReciter(reciter.id) &&
-              'isFavoriteReciter ma-2 '
-            "
-            @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
-          ></reciter-card>
-        </v-col> -->
-      </v-row>
-      <v-row class="flex-column">
+        <v-row>
+          <v-col cols="12">
+            <h4 class="mt-6 text-capitalize">القراء المفضلين لك</h4>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
+            cols="6"
+            sm="6"
+            md="4"
+            lg="3"
+            v-for="reciter in reciterState.favoriteReciters"
+          >
+            <reciter-card
+              :reciter="reciter"
+              :is-active="reciterState.isFavoriteReciter(reciter.id)"
+              @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
+            ></reciter-card>
+          </v-col>
+        </v-row>
+      </template>
+
+      <v-alert
+        v-if="isLoading"
+        type="info"
+        class="w-50 pa-5 mt-16 mx-auto"
+        title="جلب بيانات القراء"
+        rounded="4"
+        elevation="3"
+        text="برجاء الانتظار يتم جلب بيانات القراء الان من الخادم ربما ياخد وقت اكثر من المعتاد"
+      >
+      </v-alert>
+      <v-row v-if="isFetched && responseReciters" class="flex-column">
         <h4 class="mt-6 text-capitalize">قائمة القراء</h4>
         <v-alert
           v-if="isRecitersError"
@@ -146,35 +165,49 @@ onUnmounted(() => {
           "
         ></v-alert>
       </v-row>
-      <template v-if="isFetched && responseReciters.reciters">
+      <template v-if="isFetched && responseReciters">
         <v-row
           v-for="(reciterGroup, idx) in responseReciters.reciters"
           :key="idx"
+          class="mb-8"
         >
-          <v-sheet color="grey-lighten-3" class="w-100 mb-4 mt-2 py-3 px-4">
-            <b>أسم يبدأ بحرف </b>
-            <v-chip variant="tonal" color="gray" class="px-5 text-uppercase">
-              {{ reciterGroup.letter }}</v-chip
-            >
-          </v-sheet>
-          <v-col
-            cols="6"
-            sm="6"
-            md="4"
-            lg="3"
-            class="pa-2"
-            v-for="reciter in reciterGroup.data"
-            :key="reciter.id"
-          >
-            <reciter-card
-              :reciter="reciter"
-              :isActive="reciterState.isFavoriteReciter(reciter.id)"
-              @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
-            ></reciter-card>
+          <v-col cols="12" class="ps-0">
+            <v-col cols="12" md="6" class="ps-0">
+              <v-sheet
+                color="cyan-lighten-2"
+                class="w-100 d-flex align-center justify-start ga-4 mb-4 mt-10 py-3 px-4"
+              >
+                <b>أسم يبدأ بحرف </b>
+                <v-chip
+                  variant="elevated"
+                  color="gray"
+                  class="px-6 font-weight-bold text-uppercase"
+                >
+                  {{ reciterGroup.letter }}</v-chip
+                >
+              </v-sheet>
+            </v-col>
           </v-col>
+          <v-row>
+            <v-col
+              cols="6"
+              sm="6"
+              md="4"
+              lg="3"
+              class="pa-2"
+              v-for="reciter in reciterGroup.data"
+              :key="reciter.id"
+            >
+              <reciter-card
+                :reciter="reciter"
+                :isActive="reciterState.isFavoriteReciter(reciter.id)"
+                @onFavoriteClick="(ev) => handleFavorites(reciter, ev)"
+              ></reciter-card>
+            </v-col>
+          </v-row>
         </v-row>
       </template>
-      <v-row class="mb-6">
+      <v-row v-if="isFetched && responseReciters" class="mb-6">
         <v-btn
           v-if="responseReciters"
           block
@@ -182,6 +215,8 @@ onUnmounted(() => {
           variant="flat"
           :loading="isLoading"
           append-icon="mdi-reload"
+          size="large"
+          elevation="2"
           :aria-disabled="responseReciters.hasNext === false"
           :disabled="responseReciters.hasNext === false"
           @click="handleShowMore"
