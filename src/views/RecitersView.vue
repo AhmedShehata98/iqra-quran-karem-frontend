@@ -142,17 +142,24 @@ onUnmounted(() => {
           </v-col>
         </v-row>
       </template>
-
+     <v-row>
+      <v-col
+        cols="12"
+        md="6"
+        class="mt-16"
+      >
       <v-alert
         v-if="isLoading"
         type="info"
-        class="w-50 pa-5 mt-16 mx-auto"
+        class="w-100 pa-5 mx-auto"
         title="جلب بيانات القراء"
         rounded="4"
         elevation="3"
         text="برجاء الانتظار يتم جلب بيانات القراء الان من الخادم ربما ياخد وقت اكثر من المعتاد"
       >
       </v-alert>
+       </v-col>
+     </v-row>
       <v-row v-if="isFetched && responseReciters" class="flex-column">
         <h4 class="mt-6 text-capitalize">قائمة القراء</h4>
         <v-alert
